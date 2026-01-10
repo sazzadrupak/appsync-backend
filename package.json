@@ -1,0 +1,25 @@
+{
+  "name": "appsync-backend",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/sazzadrupak/appsync-backend#readme",
+  "bugs": {
+    "url": "https://github.com/sazzadrupak/appsync-backend/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sazzadrupak/appsync-backend.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "sls": "sls"
+  },
+  "devDependencies": {
+    "serverless": "2.4.0",
+    "serverless-appsync-plugin": "^1.4.0"
+  }
+}
