@@ -3,11 +3,16 @@ frameworkVersion: '2'
 
 plugins:
   - serverless-appsync-plugin
+  - serverless-iam-roles-per-function
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs20.x
   region: us-east-1
+  environment:
+    # any env variable you define here will be available for all your lambda functions
+    STAGE: ${self:custom.stage}
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'  # Enable HTTP connection reuse for Node.js Lambda functions
 
 package:
   exclude:
@@ -15,12 +20,42 @@ package:
     - package-lock.json
 
 custom:
+  stage: ${opt:stage, self:provider.stage, 'dev'}
   appSync:
     - ${file(serverless.appsync-api.yml)}
+
+functions:
+  # Define your Lambda functions here
+  confirmUserSignup:
+    handler: functions/confirmUserSignup.handler
+    environment:
+      USERS_TABLE: !Ref UsersTable
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - "dynamodb:PutItem"
+        Resource:
+          - !GetAtt UsersTable.Arn
 
 resources:
   Resources:
     # Add any additional resources here
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+        Tags:
+          - Key: Environment
+            Value: ${self:custom.stage}
+          - Key: Name
+            Value: UsersTable-${self:custom.stage}
+
     CognitoUserPool:
       Type: AWS::Cognito::UserPool
       Properties:
@@ -36,10 +71,22 @@ resources:
         UsernameAttributes:
           - email
         Schema:
+          # once a pool has been created, these schema cannot be changed
           - AttributeDataType: String
             Name: email
             Required: true
             Mutable: true
+        LambdaConfig:
+          PostConfirmation: !GetAtt ConfirmUserSignupLambdaFunction.Arn
+
+    UserPoolInvokConfirmUserSignupLambdaPermission:
+    # Permission for Cognito to invoke the PostConfirmation Lambda trigger
+      Type: AWS::Lambda::Permission
+      Properties:
+        FunctionName: !Ref ConfirmUserSignupLambdaFunction
+        Action: lambda:InvokeFunction
+        Principal: cognito-idp.amazonaws.com
+        SourceArn: !GetAtt CognitoUserPool.Arn
 
     WebUserPoolClient:
       Type: AWS::Cognito::UserPoolClient
