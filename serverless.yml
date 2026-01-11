@@ -17,12 +17,18 @@ provider:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'  # Enable HTTP connection reuse for Node.js Lambda functions
 
 package:
-  patterns:
-    - '!package.json'
-    - '!package-lock.json'
-    - '!node_modules/**'
-    - 'node_modules/aws-sdk/**'
-    - 'node_modules/chance/**'
+  exclude:
+    - .gitignore
+    - .git/**
+    - .vscode/**
+    - __tests__/**
+    - tests/**
+    - .DS_Store
+    - package-lock.json
+    - package.json
+    - node_modules/**
+  include:
+    - node_modules/chance/**
 
 custom:
   region: ${opt:region, self:provider.region, 'us-east-1'}
