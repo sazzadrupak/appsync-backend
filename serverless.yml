@@ -4,6 +4,7 @@ frameworkVersion: '2'
 plugins:
   - serverless-appsync-plugin
   - serverless-iam-roles-per-function
+  - serverless-export-env
 
 provider:
   name: aws
@@ -20,6 +21,7 @@ package:
     - package-lock.json
 
 custom:
+  region: ${opt:region, self:provider.region, 'us-east-1'}
   stage: ${opt:stage, self:provider.stage, 'dev'}
   appSync:
     - ${file(serverless.appsync-api.yml)}
@@ -101,6 +103,9 @@ resources:
           - ALLOW_USER_PASSWORD_AUTH
         PreventUserExistenceErrors: ENABLED
   Outputs:
+    AwsRegion:
+      Description: "AWS Region"
+      Value: ${self:custom.region}
     CognitoUserPoolId:
       Description: "Cognito User Pool ID"
       Value:
