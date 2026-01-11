@@ -16,9 +16,12 @@ provider:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'  # Enable HTTP connection reuse for Node.js Lambda functions
 
 package:
-  exclude:
-    - package.json
-    - package-lock.json
+  patterns:
+    - '!package.json'
+    - '!package-lock.json'
+    - '!node_modules/**'
+    - 'node_modules/aws-sdk/**'
+    - 'node_modules/chance/**'
 
 custom:
   region: ${opt:region, self:provider.region, 'us-east-1'}
@@ -29,7 +32,7 @@ custom:
 functions:
   # Define your Lambda functions here
   confirmUserSignup:
-    handler: functions/confirmUserSignup.handler
+    handler: functions/confirm-user-signup.handler
     environment:
       USERS_TABLE: !Ref UsersTable
     iamRoleStatements:
@@ -106,10 +109,16 @@ resources:
     AwsRegion:
       Description: "AWS Region"
       Value: ${self:custom.region}
+
     CognitoUserPoolId:
       Description: "Cognito User Pool ID"
       Value:
         Ref: CognitoUserPool
+
+    WebCognitoUserPoolClientId:
+      Description: "Cognito User Pool Client ID"
+      Value:
+        Ref: WebUserPoolClient
 
 # you can overwrite defaults here
 #  stage: dev

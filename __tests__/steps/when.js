@@ -1,4 +1,5 @@
 require('dotenv').config();
+const AWS = require('aws-sdk');
 
 const we_invoke_confirmUserSignup = async (username, name, email) => {
   const handler = require('../../functions/confirm-user-signup').handler;
@@ -27,6 +28,39 @@ const we_invoke_confirmUserSignup = async (username, name, email) => {
   await handler(event, context);
 };
 
+const a_user_signsup = async (password, name, email) => {
+  const cognito = new AWS.CognitoIdentityServiceProvider();
+
+  const usserPoolId = process.env.COGNITO_USER_POOL_ID;
+  const clientId = process.env.WEB_COGNITO_USER_POOL_CLIENT_ID;
+
+  const signUpResp = await cognito.signUp({
+    ClientId: clientId,
+    Username: email,
+    Password: password,
+    UserAttributes: [
+      {
+        Name: 'name',
+        Value: name
+      }
+    ]
+  }).promise();
+
+  const username = signUpResp.UserSub;
+  console.log(`User signed up with username [${username}]`);
+
+  // this allows to skip the verification code and confirm the user in Cognito
+  await cognito.adminConfirmSignUp({
+    UserPoolId: usserPoolId,
+    Username: username
+  }).promise();
+
+  console.log(`[${email}] confirmed signup`);
+
+  return { username, email, name };
+}
+
 module.exports = {
-  we_invoke_confirmUserSignup
+  we_invoke_confirmUserSignup,
+  a_user_signsup
 };
