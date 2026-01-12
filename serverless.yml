@@ -74,6 +74,23 @@ functions:
         Action:
           - "s3:GetObject"
         Resource: !Sub ${AssetsBucket.Arn}/*
+  tweet:
+    handler: functions/tweet.handler
+    environment:
+      USERS_TABLE_NAME: !Ref UsersTable
+      TWEETS_TABLE_NAME: !Ref TweetsTable
+      TIMELINES_TABLE_NAME: !Ref TimelinesTable
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - "dynamodb:UpdateItem"
+        Resource: !GetAtt UsersTable.Arn
+      - Effect: "Allow"
+        Action:
+          - "dynamodb:PutItem"
+        Resource:
+          - !GetAtt TweetsTable.Arn
+          - !GetAtt TimelinesTable.Arn
 
 
 resources:
@@ -94,6 +111,52 @@ resources:
             Value: ${self:custom.stage}
           - Key: Name
             Value: UsersTable-${self:custom.stage}
+    TweetsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: creator
+            AttributeType: S
+        GlobalSecondaryIndexes:
+          - IndexName: byCreator
+            KeySchema:
+              - AttributeName: creator
+                KeyType: HASH
+              - AttributeName: id # tweet id as sort key
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL # include all attributes
+        Tags:
+          - Key: Environment
+            Value: ${self:custom.stage}
+          - Key: Name
+            Value: TweetsTable-${self:custom.stage}
+    
+    TimelinesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: tweetId
+            KeyType: RANGE
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: tweetId
+            AttributeType: S
+        Tags:
+          - Key: Environment
+            Value: ${self:custom.stage}
+          - Key: Name
+            Value: TimelinesTable-${self:custom.stage}
 
     CognitoUserPool:
       Type: AWS::Cognito::UserPool
