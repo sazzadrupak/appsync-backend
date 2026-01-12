@@ -1,7 +1,8 @@
+const chance = require('chance').Chance();
+const path = require('path');
 const given = require('../../steps/given');
 const when = require('../../steps/when');
 const then = require('../../steps/then');
-const chance = require('chance').Chance();
 
 describe('Given an authenticated user', () => {
   let user, profile;
@@ -32,6 +33,22 @@ describe('Given an authenticated user', () => {
     const [firstName, lastName] = user.name.split(' ')
     expect(profile.screenName).toContain(firstName)
     expect(profile.screenName).toContain(lastName)
+  });
+
+  it('The user can get an URL to upload new profile image', async () => {
+    const uploadUrl = await when.a_user_requests_image_upload_url(user, '.png', 'image/png');
+
+    const bucketName = process.env.BUCKET_NAME;
+    const regex = new RegExp(`https://${bucketName}.s3-accelerate.amazonaws.com/${user.username}/.*\\.png\\?.*X-Amz-Algorithm=AWS4-HMAC-SHA256.*X-Amz-Signature=.*`);
+    expect(uploadUrl).toMatch(regex);
+
+    const filePath = path.join(__dirname, '../../data/logo.png');
+    await then.user_can_upload_image_to_signed_url(uploadUrl, filePath, 'image/png');
+
+    // Extract the image key from the upload URL
+    const urlParts = uploadUrl.split('?')[0].split('/');
+    const imageKey = urlParts.slice(3).join('/'); // Remove https://bucket.s3-accelerate.amazonaws.com/
+    await then.user_can_download_image_from(imageKey);
   });
 
   it('The user can edit his profile with updateMyProfile mutation', async () => {

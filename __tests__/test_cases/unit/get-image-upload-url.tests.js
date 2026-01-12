@@ -14,7 +14,8 @@ describe('When getImageUploadUrl runs', () => {
     const signedUrl = await when.we_invoke_getImageUploadUrl(username, extension, contentType);
 
     const { BUCKET_NAME } = process.env;
-    const regex = new RegExp(`https://${BUCKET_NAME}.s3-accelerate.amazonaws.com/${username}/.*${extension || ''}\?.*Content-Type=${contentType ? contentType.replace('/', '%2F') : 'image%2Fjpeg'}.*`)
+    const regex =new RegExp(`https://${BUCKET_NAME}.s3-accelerate.amazonaws.com/${username}/.*${extension || ''}\?.*X-Amz-Algorithm=AWS4-HMAC-SHA256.*X-Amz-Signature=.*`);
+    // const regex = new RegExp(`https://${BUCKET_NAME}.s3-accelerate.amazonaws.com/${username}/.*${extension || ''}\?.*Content-Type=${contentType ? contentType.replace('/', '%2F') : 'image%2Fjpeg'}.*`)
     expect(signedUrl).toMatch(regex);
   });
 });

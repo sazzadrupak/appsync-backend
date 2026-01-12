@@ -29,6 +29,7 @@ package:
     - node_modules/**
   include:
     - node_modules/chance/**
+    - node_modules/ulid/**
 
 custom:
   region: ${opt:region, self:provider.region, 'us-east-1'}
@@ -63,6 +64,15 @@ functions:
         Action:
           - "s3:PutObject"
           - "s3:PutObjectAcl"
+        Resource: !Sub ${AssetsBucket.Arn}/*
+  getImageDownloadUrl:
+    handler: functions/get-image-download-url.handler
+    environment:
+      BUCKET_NAME: !Ref AssetsBucket
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - "s3:GetObject"
         Resource: !Sub ${AssetsBucket.Arn}/*
 
 
@@ -134,6 +144,14 @@ resources:
       Properties:
         AccelerateConfiguration:
           AccelerationStatus: Enabled
+        OwnershipControls:
+          Rules:
+            - ObjectOwnership: ObjectWriter
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+          BlockPublicPolicy: false
+          IgnorePublicAcls: false
+          RestrictPublicBuckets: false
         CorsConfiguration:
           CorsRules:
             - AllowedMethods:

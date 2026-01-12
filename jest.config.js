@@ -1,10 +1,8 @@
 module.exports = {
     testEnvironment: 'node',
     testMatch: ['**/__tests__/test_cases/**/*'],
-    testEnvironmentOptions: {
-        node: {
-            experimentalVmModules: true
-        }
-    },
+    transformIgnorePatterns: [
+        'node_modules/(?!(@aws-sdk|@smithy)/.*/)'
+    ],
     transform: {},
-}
+};
