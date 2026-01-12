@@ -54,6 +54,17 @@ functions:
           - "dynamodb:PutItem"
         Resource:
           - !GetAtt UsersTable.Arn
+  getImageUploadUrl:
+    handler: functions/get-image-upload-url.handler
+    environment:
+      BUCKET_NAME: !Ref AssetsBucket
+    iamRoleStatements:
+      - Effect: "Allow"
+        Action:
+          - "s3:PutObject"
+          - "s3:PutObjectAcl"
+        Resource: !Sub ${AssetsBucket.Arn}/*
+
 
 resources:
   Resources:
@@ -118,6 +129,28 @@ resources:
           - ALLOW_REFRESH_TOKEN_AUTH
           - ALLOW_USER_PASSWORD_AUTH
         PreventUserExistenceErrors: ENABLED
+    AssetsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        AccelerateConfiguration:
+          AccelerationStatus: Enabled
+        CorsConfiguration:
+          CorsRules:
+            - AllowedMethods:
+                - GET
+                - PUT
+              AllowedOrigins:
+                - '*' # adjust this to your frontend domain in production
+              AllowedHeaders:
+                - '*'
+              MaxAge: 3000
+        BucketName: !Sub 'appsync-assets-bucket-${AWS::AccountId}-${self:custom.stage}'
+        Tags:
+          - Key: Environment
+            Value: ${self:custom.stage}
+          - Key: Name
+            Value: AssetsBucket-${self:custom.stage}
+
   Outputs:
     AwsRegion:
       Description: "AWS Region"
