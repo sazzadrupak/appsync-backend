@@ -131,7 +131,7 @@ resources:
               - AttributeName: id # tweet id as sort key
                 KeyType: RANGE
             Projection:
-              ProjectionType: ALL # include all attributes
+              ProjectionType: ALL # include all attributes in the row
         Tags:
           - Key: Environment
             Value: ${self:custom.stage}
