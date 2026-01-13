@@ -162,6 +162,22 @@ const a_user_requests_image_upload_url = async (user, extension, contentType) =>
   return url;
 }
 
+const we_invoke_tweet = async (username, text) => {
+  const handler = require('../../functions/tweet').handler;
+
+  const context = {};
+  const event = {
+    identity: {
+      username
+    },
+    arguments: {
+      text
+    }
+  };
+
+  return await handler(event, context);
+};
+
 module.exports = {
   we_invoke_confirmUserSignup,
   a_user_signsup,
@@ -169,5 +185,6 @@ module.exports = {
   a_user_calls_getMyProfile,
   a_user_calls_updateMyProfile,
   we_invoke_getImageUploadUrl,
-  a_user_requests_image_upload_url
+  a_user_requests_image_upload_url,
+  we_invoke_tweet
 };

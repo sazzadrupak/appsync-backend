@@ -41,8 +41,51 @@ const user_can_download_image_from = async (imageKey) => {
   return resp.data;
 };
 
+const tweet_exists_in_TweetsTable = async (tweetId) => {
+  const DynamoDB = new AWS.DynamoDB.DocumentClient();
+
+  console.log(`looking for tweet [${tweetId}] exists in TweetsTable [${process.env.TWEETS_TABLE}]`);
+  const resp = await DynamoDB.get({
+    TableName: process.env.TWEETS_TABLE,
+    Key: { id: tweetId }
+  }).promise();
+
+  expect(resp.Item).toBeTruthy();
+  return resp.Item;
+};
+
+const tweet_exists_in_TimelinesTable = async (userId, tweetId) => {
+  const DynamoDB = new AWS.DynamoDB.DocumentClient();
+
+  console.log(`looking for tweet [${tweetId}] exists in TimelinesTable [${process.env.TIMELINES_TABLE}]`);
+  const resp = await DynamoDB.get({
+    TableName: process.env.TIMELINES_TABLE,
+    Key: { userId, tweetId }
+  }).promise();
+
+  expect(resp.Item).toBeTruthy();
+  return resp.Item;
+};
+
+const tweetsCount_is_incremented_in_UsersTable = async (userId, expectedCount) => {
+  const DynamoDB = new AWS.DynamoDB.DocumentClient();
+
+  console.log(`looking for user [${userId}] in table [${process.env.USERS_TABLE}]`);
+  const resp = await DynamoDB.get({
+    TableName: process.env.USERS_TABLE,
+    Key: { id: userId }
+  }).promise();
+
+  expect(resp.Item).toBeTruthy();
+  expect(resp.Item.tweetsCount).toEqual(expectedCount);
+  return resp.Item;
+};
+
 module.exports = {
   user_exists_in_UsersTable,
   user_can_upload_image_to_signed_url,
-  user_can_download_image_from
+  user_can_download_image_from,
+  tweet_exists_in_TweetsTable,
+  tweet_exists_in_TimelinesTable,
+  tweetsCount_is_incremented_in_UsersTable
 };
