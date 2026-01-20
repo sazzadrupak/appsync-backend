@@ -13,13 +13,14 @@ const a_random_user = () => {
   return { name, email, password };
 };
 
-const an_appsync_context = (identity, args) => {
+const an_appsync_context = (identity, args, result) => {
   const util = velocityUtil.create([], new Date(), Object());
 
   const context = {
     arguments: args,
     identity,
     args,
+    result
   };
 
   // appsync context has a bunch of different aliases, like args for arguments, util for utils, etc
