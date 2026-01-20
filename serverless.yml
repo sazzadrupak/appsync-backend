@@ -137,7 +137,6 @@ resources:
             Value: ${self:custom.stage}
           - Key: Name
             Value: TweetsTable-${self:custom.stage}
-    
     TimelinesTable:
       Type: AWS::DynamoDB::Table
       Properties:
