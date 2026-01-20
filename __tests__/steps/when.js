@@ -205,7 +205,7 @@ const a_user_calls_tweet = async (user, text) => {
 }
 
 const a_user_calls_getTweets = async (user, userId, limit, nextToken) => {
-  const tweetMutation = `query getTweets($userId: ID!, $limit: Int!, $nextToken: String) {
+  const getTweets = `query getTweets($userId: ID!, $limit: Int!, $nextToken: String) {
     getTweets(userId: $userId, limit: $limit, nextToken: $nextToken) {
       nextToken
       tweets {
@@ -228,11 +228,42 @@ const a_user_calls_getTweets = async (user, userId, limit, nextToken) => {
 
   const variables = { userId, limit, nextToken };
 
-  const data = await GraphQL(process.env.API_URL, tweetMutation, variables, user.accessToken);
-  const newTweet = data.getTweets;
+  const data = await GraphQL(process.env.API_URL, getTweets, variables, user.accessToken);
+  const result = data.getTweets;
 
-  console.log(`[${user.username}] - tweeted [${newTweet.id}]`);
-  return newTweet;
+  console.log(`[${user.username}] - fetched tweets`);
+  return result;
+}
+
+const a_user_calls_getMyTimeline = async (user, limit, nextToken) => {
+  const getMyTimeline = `query getMyTimeline($limit: Int!, $nextToken: String) {
+    getMyTimeline(limit: $limit, nextToken: $nextToken) {
+      nextToken
+      tweets {
+        id
+        createdAt
+        profile {
+          id
+          name
+          screenName
+        }
+        ... on Tweet {
+          text
+          replies
+          likes
+          retweets
+        }
+      }
+    }
+  }`;
+
+  const variables = { limit, nextToken };
+
+  const data = await GraphQL(process.env.API_URL, getMyTimeline, variables, user.accessToken);
+  const result = data.getMyTimeline;
+
+  console.log(`[${user.username}] - fetched timeline`);
+  return result;
 }
 
 module.exports = {
@@ -245,5 +276,6 @@ module.exports = {
   a_user_requests_image_upload_url,
   we_invoke_tweet,
   a_user_calls_tweet,
-  a_user_calls_getTweets
+  a_user_calls_getTweets,
+  a_user_calls_getMyTimeline
 };

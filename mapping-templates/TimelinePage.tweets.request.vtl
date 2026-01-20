@@ -1,4 +1,3 @@
-# get the tweet ids into an array
 #if ($context.source.tweets.size() == 0)
   #return([])
 #end
@@ -15,7 +14,7 @@
   "tables" : {
     "${TweetsTable}": {
       "keys": $util.toJson($tweets),
-      "consistentRead": false,
+      "consistentRead": false
     }
   }
 }
