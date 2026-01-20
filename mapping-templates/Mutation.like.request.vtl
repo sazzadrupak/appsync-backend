@@ -1,0 +1,49 @@
+{
+  "version": "2018-05-29",
+  "operation": "TransactWriteItems",
+  "transactItems": [
+    {
+      "table": "${LikesTable}",
+      "operation": "PutItem",
+      "key": {
+        "userId": $util.dynamodb.toDynamoDBJson($ctx.identity.sub),
+        "tweetId": $util.dynamodb.toDynamoDBJson($ctx.arguments.tweetId)
+      },
+      "condition": {
+        "expression": "attribute_not_exists(tweetId)"
+      }
+    },
+    {
+      "table": "${TweetsTable}",
+      "operation": "UpdateItem",
+      "key": {
+        "id": $util.dynamodb.toDynamoDBJson($ctx.arguments.tweetId)
+      },
+      "update": {
+        "expression": "ADD likes :one",
+        "expressionValues": {
+          ":one": $util.dynamodb.toDynamoDBJson(1)
+        }
+      },
+      "condition": {
+        "expression": "attribute_exists(id)",
+      }
+    },
+    {
+      "table": "${UsersTable}",
+      "operation": "UpdateItem",
+      "key": {
+        "id": $util.dynamodb.toDynamoDBJson($ctx.identity.username)
+      },
+      "update": {
+        "expression": "ADD likesCounts :one",
+        "expressionValues": {
+          ":one": $util.dynamodb.toDynamoDBJson(1)
+        }
+      },
+      "condition": {
+        "expression": "attribute_exists(id)",
+      }
+    }
+  ]
+}
