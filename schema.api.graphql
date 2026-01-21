@@ -104,8 +104,8 @@ type Tweet implements ITweet {
     replies: Int!
     likes: Int!
     retweets: Int!
-    likedByMe: Boolean!
-    retweetedByMe: Boolean!
+    liked: Boolean!
+    retweeted: Boolean!
 }
 
 type Reply implements ITweet {
@@ -118,8 +118,8 @@ type Reply implements ITweet {
     replies: Int!
     likes: Int!
     retweets: Int!
-    likedByMe: Boolean!
-    retweetedByMe: Boolean!
+    liked: Boolean!
+    retweeted: Boolean!
 }
 
 type Retweet implements ITweet {
